@@ -10,7 +10,7 @@ import {
   // useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { Icon, DivIcon } from "leaflet";
+import { Icon, DivIcon, Marker as LeafletMarker } from "leaflet";
 import type { Location } from "@/lib/data";
 import trashIcon from "@/assets/recycling-bin.png";
 import publicIcon from "@/assets/public.png";
@@ -88,7 +88,7 @@ export default function MapView({
     lat: number;
     lng: number;
   } | null>(null);
-  const popupRefs = useRef<{ [key: string]: L.Popup }>({});
+  const popupRefs = useRef<{ [key: string]: LeafletMarker }>({});
 
   useEffect(() => {
     setIsMounted(true);
