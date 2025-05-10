@@ -7,7 +7,7 @@ import {
   Marker,
   Popup,
   useMap,
-  useMapEvents,
+  // useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { Icon, DivIcon } from "leaflet";
@@ -39,9 +39,9 @@ const tempIcon = new DivIcon({
 // Componente para controlar el centro del mapa
 function MapController({
   selectedLocation,
-  isSelectingLocation,
-  onMapClick,
-}: {
+}: // isSelectingLocation,
+// onMapClick,
+{
   selectedLocation: Location | null;
   isSelectingLocation: boolean;
   onMapClick: (lat: number, lng: number) => void;
@@ -59,13 +59,13 @@ function MapController({
   }, [map, selectedLocation]);
 
   // Manejar clics en el mapa para seleccionar ubicación
-  const mapEvents = useMapEvents({
-    click(e) {
-      if (isSelectingLocation) {
-        onMapClick(e.latlng.lat, e.latlng.lng);
-      }
-    },
-  });
+  // const mapEvents = useMapEvents({
+  //   click(e) {
+  //     if (isSelectingLocation) {
+  //       onMapClick(e.latlng.lat, e.latlng.lng);
+  //     }
+  //   },
+  // });
 
   return null;
 }
@@ -88,7 +88,7 @@ export default function MapView({
     lat: number;
     lng: number;
   } | null>(null);
-  const popupRefs = useRef<{ [key: string]: any }>({});
+  const popupRefs = useRef<{ [key: string]: L.Popup }>({});
 
   useEffect(() => {
     setIsMounted(true);
