@@ -57,7 +57,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col md:flex-row">
-      <div className="w-full md:w-1/2 h-[50vh] md:h-screen">
+      <div className="w-full md:w-1/2 h-[50vh] md:h-screen p-2">
         <MapView
           selectedLocation={selectedLocation}
           locations={locations}
