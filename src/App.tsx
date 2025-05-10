@@ -1,6 +1,6 @@
 import "./fix-leaflet-icons";
 import Home from "./pages/Home";
-import Navbar from "./components/Navbar/Navbar.jsx";
+import Navbar from "./components/Navbar/Navbar";
 
 function App() {
   return (
