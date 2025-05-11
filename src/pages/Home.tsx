@@ -57,7 +57,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col md:flex-row">
-      <div className="w-full md:w-1/2 h-[50vh] md:h-screen p-2">
+      <div className="w-full md:w-1/2 h-[50vh] md:h-screen p-6">
         <MapView
           selectedLocation={selectedLocation}
           locations={locations}
@@ -65,7 +65,7 @@ export default function Home() {
           onMapClick={handleMapClick}
         />
       </div>
-      <div className="w-full md:w-1/2 p-4 overflow-y-auto max-h-[50vh] md:max-h-screen">
+      <div className="w-full md:w-1/2 p-4 overflow-y-auto md:max-h-screen">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Ubicaciones</h1>
           {!showAddForm && (
