@@ -8,11 +8,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Trash2, Building, Search } from "lucide-react";
-import type { Location } from "@/lib/data";
+import { MapPin, Search } from "lucide-react";
+import type { Location, CategoryId } from "@/lib/data";
 import { CATEGORIES } from "@/lib/data";
 import { Input } from "@/components/ui/input";
+
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface LocationCardsProps {
   onSelectLocation: (location: Location) => void;
@@ -24,16 +32,25 @@ export default function LocationCards({
   locations,
 }: LocationCardsProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeCategories, setActiveCategories] = useState<CategoryId[]>([]);
+
+  const toggleCategory = (categoryId: CategoryId) => {
+    setActiveCategories((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
 
   const filteredLocations = locations.filter((location) => {
     const matchesSearch =
       location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       location.address.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return activeTab === "all"
-      ? matchesSearch
-      : matchesSearch && location.type === activeTab;
+    const matchesCategory =
+      activeCategories.length === 0 || activeCategories.includes(location.type);
+
+    return matchesSearch && matchesCategory;
   });
 
   return (
@@ -48,16 +65,26 @@ export default function LocationCards({
         />
       </div>
 
-      <Tabs defaultValue="all" onValueChange={setActiveTab}>
-        <TabsList className={`grid w-full grid-cols-${CATEGORIES.length + 1}`}>
-          <TabsTrigger value="all">Todos</TabsTrigger>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="w-full">
+            Filtrar por categoría
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DropdownMenuLabel>Categorías</DropdownMenuLabel>
+          <DropdownMenuSeparator />
           {CATEGORIES.map((cat) => (
-            <TabsTrigger key={cat.id} value={cat.id}>
+            <DropdownMenuCheckboxItem
+              key={cat.id}
+              checked={activeCategories.includes(cat.id)}
+              onCheckedChange={() => toggleCategory(cat.id)}
+            >
               {cat.name}
-            </TabsTrigger>
+            </DropdownMenuCheckboxItem>
           ))}
-        </TabsList>
-      </Tabs>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <div className="space-y-4">
         {filteredLocations.length === 0 ? (
@@ -65,35 +92,36 @@ export default function LocationCards({
             No se encontraron ubicaciones
           </p>
         ) : (
-          filteredLocations.map((location) => (
-            <Card key={location.id}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{location.name}</CardTitle>
-                  {location.type === "trash" ? (
-                    <Trash2 className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <Building className="h-5 w-5 text-blue-600" />
-                  )}
-                </div>
-                <CardDescription>{location.address}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm">{location.description}</p>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => onSelectLocation(location)}
-                >
-                  <MapPin className="h-4 w-4 mr-2" />
-                  Ver en mapa
-                </Button>
-              </CardFooter>
-            </Card>
-          ))
+          filteredLocations.map((location) => {
+            const category = CATEGORIES.find((c) => c.id === location.type);
+            return (
+              <Card key={location.id}>
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-lg">{location.name}</CardTitle>
+                    <span className="text-xs px-2 py-0.5 rounded-full">
+                      {category?.name}
+                    </span>
+                  </div>
+                  <CardDescription>{location.address}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm">{location.description}</p>
+                </CardContent>
+                <CardFooter>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => onSelectLocation(location)}
+                  >
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Ver en mapa
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })
         )}
       </div>
     </div>

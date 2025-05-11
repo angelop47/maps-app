@@ -158,6 +158,7 @@ export default function MapView({
                 <h3 className="font-bold">{location.name}</h3>
                 <p>{location.description}</p>
                 <p className="text-sm text-gray-500">{location.address}</p>
+                <p className="text-sm text-gray-500">{location.type}</p>
               </div>
             </Popup>
           </Marker>
