@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState, useRef } from "react";
 import {
   MapContainer,
@@ -14,6 +12,9 @@ import { Icon, DivIcon, Marker as LeafletMarker } from "leaflet";
 import { CATEGORIES } from "@/lib/data";
 import type { Location, CategoryId } from "@/lib/data";
 import publicIcon from "@/assets/public.png";
+
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/utils/firebase";
 
 // Iconos personalizados para los diferentes tipos de ubicaciones
 const customIcon = (type: CategoryId) => {
@@ -68,17 +69,16 @@ function MapController({
 
 interface MapViewProps {
   selectedLocation: Location | null;
-  locations: Location[];
   isSelectingLocation: boolean;
   onMapClick: (lat: number, lng: number) => void;
 }
 
 export default function MapView({
   selectedLocation,
-  locations,
   isSelectingLocation,
   onMapClick,
 }: MapViewProps) {
+  const [locations, setLocations] = useState<Location[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [tempMarker, setTempMarker] = useState<{
     lat: number;
@@ -103,6 +103,16 @@ export default function MapView({
       }
     }
   }, [selectedLocation]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const snapshot = await getDocs(collection(db, "locations"));
+      const data = snapshot.docs.map((doc) => doc.data() as Location);
+      setLocations(data);
+    };
+
+    fetchLocations();
+  }, []);
 
   if (!isMounted) {
     return (

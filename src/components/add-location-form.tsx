@@ -1,22 +1,21 @@
 import type React from "react";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { MapPin, Plus, X } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 import type { Location, CategoryId } from "@/lib/data";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "@/utils/firebase";
 
 interface AddLocationFormProps {
   onAddLocation: (location: Omit<Location, "id">) => void;
@@ -40,11 +39,12 @@ export default function AddLocationForm({
 
   const [manualLat, setManualLat] = useState("");
   const [manualLng, setManualLng] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🔹 Formulario enviado");
 
-    // Usar las coordenadas seleccionadas en el mapa o las ingresadas manualmente
     const lat = selectedCoordinates
       ? selectedCoordinates.lat
       : Number.parseFloat(manualLat);
@@ -53,28 +53,43 @@ export default function AddLocationForm({
       : Number.parseFloat(manualLng);
 
     if (isNaN(lat) || isNaN(lng)) {
-      alert(
-        "Por favor, ingrese coordenadas válidas o seleccione una ubicación en el mapa"
-      );
+      console.log("❌ Coordenadas inválidas:", lat, lng);
+      alert("Por favor, ingrese coordenadas válidas o seleccione en el mapa");
       return;
     }
 
-    onAddLocation({
+    const newLocation: Omit<Location, "id"> = {
       name,
       description,
       address,
       lat,
       lng,
       type: locationType,
-    });
+    };
 
-    // Limpiar el formulario
-    setName("");
-    setDescription("");
-    setAddress("");
-    setLocationType("public");
-    setManualLat("");
-    setManualLng("");
+    console.log("📦 Datos preparados para guardar:", newLocation);
+
+    setLoading(true);
+    try {
+      const docRef = await addDoc(collection(db, "locations"), newLocation);
+      console.log("✅ Documento guardado en Firestore con ID:", docRef.id);
+
+      onAddLocation(newLocation); // Actualizar UI o estado
+      console.log("📲 Llamado onAddLocation");
+
+      // Limpiar el formulario
+      setName("");
+      setDescription("");
+      setAddress("");
+      setLocationType("public");
+      setManualLat("");
+      setManualLng("");
+    } catch (error) {
+      console.error("🔥 Error al guardar la ubicación:", error);
+      alert("Hubo un error al guardar la ubicación");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -143,21 +158,6 @@ export default function AddLocationForm({
                 ))}
               </select>
             </div>
-
-            {/* <RadioGroup
-              value={locationType}
-              onValueChange={(value) => setLocationType(value as "trash" | "public")}
-              className="flex space-x-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="public" id="public" />
-                <Label htmlFor="public">Lugar público</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="trash" id="trash" />
-                <Label htmlFor="trash">Contenedor de basura</Label>
-              </div>
-            </RadioGroup> */}
           </div>
 
           <div className="space-y-2">
@@ -202,6 +202,7 @@ export default function AddLocationForm({
               variant="outline"
               className="w-full mt-2"
               onClick={onSelectLocationOnMap}
+              disabled={isSelecting}
             >
               <MapPin className="h-4 w-4 mr-2" />
               {isSelecting
@@ -216,14 +217,12 @@ export default function AddLocationForm({
               </p>
             )}
           </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            <Plus className="h-4 w-4 mr-2" />
+            {loading ? "Guardando..." : "Añadir ubicación"}
+          </Button>
         </form>
       </CardContent>
-      <CardFooter>
-        <Button type="submit" className="w-full" onClick={handleSubmit}>
-          <Plus className="h-4 w-4 mr-2" />
-          Añadir ubicación
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -22,17 +22,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/utils/firebase";
+
 interface LocationCardsProps {
   onSelectLocation: (location: Location) => void;
-  locations: Location[];
 }
 
-export default function LocationCards({
-  onSelectLocation,
-  locations,
-}: LocationCardsProps) {
+export default function LocationCards({ onSelectLocation }: LocationCardsProps) {
+  const [locations, setLocations] = useState<Location[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategories, setActiveCategories] = useState<CategoryId[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "locations"));
+        const data = snapshot.docs.map((doc) => doc.data() as Location);
+        setLocations(data);
+      } catch (error) {
+        console.error("Error al obtener las ubicaciones:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLocations();
+  }, []);
 
   const toggleCategory = (categoryId: CategoryId) => {
     setActiveCategories((prev) =>
@@ -87,7 +104,9 @@ export default function LocationCards({
       </DropdownMenu>
 
       <div className="space-y-4">
-        {filteredLocations.length === 0 ? (
+        {loading ? (
+          <p className="text-center py-8 text-muted-foreground">Cargando ubicaciones...</p>
+        ) : filteredLocations.length === 0 ? (
           <p className="text-center py-8 text-muted-foreground">
             No se encontraron ubicaciones
           </p>
