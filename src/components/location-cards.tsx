@@ -26,10 +26,13 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 
 interface LocationCardsProps {
+  locations: Location[];
   onSelectLocation: (location: Location) => void;
 }
 
-export default function LocationCards({ onSelectLocation }: LocationCardsProps) {
+export default function LocationCards({
+  onSelectLocation,
+}: LocationCardsProps) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategories, setActiveCategories] = useState<CategoryId[]>([]);
@@ -105,7 +108,9 @@ export default function LocationCards({ onSelectLocation }: LocationCardsProps) 
 
       <div className="space-y-4">
         {loading ? (
-          <p className="text-center py-8 text-muted-foreground">Cargando ubicaciones...</p>
+          <p className="text-center py-8 text-muted-foreground">
+            Cargando ubicaciones...
+          </p>
         ) : filteredLocations.length === 0 ? (
           <p className="text-center py-8 text-muted-foreground">
             No se encontraron ubicaciones

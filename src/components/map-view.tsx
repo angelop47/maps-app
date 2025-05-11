@@ -69,9 +69,9 @@ function MapController({
 
 interface MapViewProps {
   selectedLocation: Location | null;
+  locations: Location[];
   isSelectingLocation: boolean;
   onMapClick: (lat: number, lng: number) => void;
-  locations: Location[];
 }
 
 export default function MapView({
