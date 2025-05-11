@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// "use client";
+"use client";
 
 import { useEffect, useState, useRef } from "react";
 import {
@@ -12,25 +10,21 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { Icon, DivIcon } from "leaflet";
+import { Icon, DivIcon, Marker as LeafletMarker } from "leaflet";
 import type { Location } from "@/lib/data";
 import trashIcon from "@/assets/recycling-bin.png";
 import publicIcon from "@/assets/public.png";
 
 // Iconos personalizados para los diferentes tipos de ubicaciones
-const customIcon = (type: string) => {
-  return new Icon({
-    iconUrl:
-      type === "trash"
-        ? trashIcon // Icono de contenedor de basura
-        : publicIcon, // Icono de edificio/lugar público
+const customIcon = (type: string) =>
+  new Icon({
+    iconUrl: type === "trash" ? trashIcon : publicIcon,
     iconSize: [32, 32],
     iconAnchor: [16, 32],
     popupAnchor: [0, -32],
   });
-};
 
-// Icono para el marcador temporal al seleccionar ubicación
+// Icono para el marcador temporal
 const tempIcon = new DivIcon({
   html: `<div class="w-6 h-6 rounded-full bg-red-500 border-2 border-white flex items-center justify-center text-white animate-pulse"></div>`,
   className: "",
@@ -38,7 +32,7 @@ const tempIcon = new DivIcon({
   iconAnchor: [12, 12],
 });
 
-// Componente para controlar el centro del mapa
+// Componente para centrar el mapa y manejar clics
 function MapController({
   selectedLocation,
   isSelectingLocation,
@@ -50,7 +44,6 @@ function MapController({
 }) {
   const map = useMap();
 
-  // Centrar mapa en ubicación seleccionada
   useEffect(() => {
     if (selectedLocation) {
       map.setView([selectedLocation.lat, selectedLocation.lng], 16, {
@@ -60,8 +53,7 @@ function MapController({
     }
   }, [map, selectedLocation]);
 
-  // Manejar clics en el mapa para seleccionar ubicación
-  const mapEvents = useMapEvents({
+  useMapEvents({
     click(e) {
       if (isSelectingLocation) {
         onMapClick(e.latlng.lat, e.latlng.lng);
@@ -90,16 +82,23 @@ export default function MapView({
     lat: number;
     lng: number;
   } | null>(null);
-  const popupRefs = useRef<{ [key: string]: any }>({});
+  const popupRefs = useRef<Record<string, LeafletMarker>>(Object.create(null));
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Efecto para abrir el popup cuando se selecciona una ubicación
   useEffect(() => {
-    if (selectedLocation && popupRefs.current[selectedLocation.id]) {
-      popupRefs.current[selectedLocation.id].openPopup();
+    // Limpiar referencias anteriores
+    popupRefs.current = {};
+  }, [locations]);
+
+  useEffect(() => {
+    if (selectedLocation) {
+      const marker = popupRefs.current[selectedLocation.id];
+      if (marker) {
+        marker.openPopup();
+      }
     }
   }, [selectedLocation]);
 
@@ -114,13 +113,16 @@ export default function MapView({
   return (
     <div className="relative w-full h-full">
       {isSelectingLocation && (
-        <div className="absolute top-0 left-0 right-0 z-10 bg-yellow-100 p-2 text-center text-sm">
+        <div
+          role="alert"
+          className="absolute top-0 left-0 right-0 z-10 bg-yellow-100 p-2 text-center text-sm"
+        >
           Haz clic en el mapa para seleccionar la ubicación
         </div>
       )}
 
       <MapContainer
-        center={[-34.4713, -57.8519]} // Colonia del Sacramento como centro por defecto
+        center={[-34.4713, -57.8519]}
         zoom={13}
         style={{ height: "100%", width: "100%" }}
       >
