@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Trash2, Building, Search } from "lucide-react";
 import type { Location } from "@/lib/data";
+import { CATEGORIES } from "@/lib/data";
 import { Input } from "@/components/ui/input";
 
 interface LocationCardsProps {
@@ -30,8 +31,9 @@ export default function LocationCards({
       location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       location.address.toLowerCase().includes(searchTerm.toLowerCase());
 
-    if (activeTab === "all") return matchesSearch;
-    return matchesSearch && location.type === activeTab;
+    return activeTab === "all"
+      ? matchesSearch
+      : matchesSearch && location.type === activeTab;
   });
 
   return (
@@ -47,10 +49,13 @@ export default function LocationCards({
       </div>
 
       <Tabs defaultValue="all" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className={`grid w-full grid-cols-${CATEGORIES.length + 1}`}>
           <TabsTrigger value="all">Todos</TabsTrigger>
-          <TabsTrigger value="trash">Contenedores</TabsTrigger>
-          <TabsTrigger value="public">Lugares Públicos</TabsTrigger>
+          {CATEGORIES.map((cat) => (
+            <TabsTrigger key={cat.id} value={cat.id}>
+              {cat.name}
+            </TabsTrigger>
+          ))}
         </TabsList>
       </Tabs>
 

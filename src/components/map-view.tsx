@@ -11,18 +11,20 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { Icon, DivIcon, Marker as LeafletMarker } from "leaflet";
-import type { Location } from "@/lib/data";
-import trashIcon from "@/assets/recycling-bin.png";
+import { CATEGORIES } from "@/lib/data";
+import type { Location, CategoryId } from "@/lib/data";
 import publicIcon from "@/assets/public.png";
 
 // Iconos personalizados para los diferentes tipos de ubicaciones
-const customIcon = (type: string) =>
-  new Icon({
-    iconUrl: type === "trash" ? trashIcon : publicIcon,
+const customIcon = (type: CategoryId) => {
+  const cat = CATEGORIES.find((c) => c.id === type);
+  return new Icon({
+    iconUrl: cat?.icon ?? publicIcon,
     iconSize: [32, 32],
     iconAnchor: [16, 32],
     popupAnchor: [0, -32],
   });
+};
 
 // Icono para el marcador temporal
 const tempIcon = new DivIcon({
