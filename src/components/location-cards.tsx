@@ -25,19 +25,26 @@ import {
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 
+// Props que recibe el componente LocationCards
 interface LocationCardsProps {
   locations: Location[];
   onSelectLocation: (location: Location) => void;
 }
 
+// Componente que muestra las tarjetas de ubicaciones
 export default function LocationCards({
   onSelectLocation,
 }: LocationCardsProps) {
+  // Estado para guardar todas las ubicaciones
   const [locations, setLocations] = useState<Location[]>([]);
+  // Estado para el término de búsqueda
   const [searchTerm, setSearchTerm] = useState("");
+  // Estado para las categorías activas (filtrado)
   const [activeCategories, setActiveCategories] = useState<CategoryId[]>([]);
+  // Estado de carga
   const [loading, setLoading] = useState(true);
 
+  // Efecto que se ejecuta al montar el componente para obtener las ubicaciones
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -54,6 +61,7 @@ export default function LocationCards({
     fetchLocations();
   }, []);
 
+  // Alternar una categoría activa (para el filtro)
   const toggleCategory = (categoryId: CategoryId) => {
     setActiveCategories((prev) =>
       prev.includes(categoryId)
@@ -62,6 +70,7 @@ export default function LocationCards({
     );
   };
 
+  // Filtrar las ubicaciones según la búsqueda y las categorías seleccionadas
   const filteredLocations = locations.filter((location) => {
     const matchesSearch =
       location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -75,6 +84,7 @@ export default function LocationCards({
 
   return (
     <div className="space-y-4">
+      {/* Input de búsqueda */}
       <div className="relative">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
@@ -85,6 +95,7 @@ export default function LocationCards({
         />
       </div>
 
+      {/* Menú desplegable para filtrar por categorías */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="w-full">
@@ -106,6 +117,7 @@ export default function LocationCards({
         </DropdownMenuContent>
       </DropdownMenu>
 
+      {/* Sección de tarjetas de ubicación */}
       <div className="space-y-4">
         {loading ? (
           <p className="text-center py-8 text-muted-foreground">
@@ -116,6 +128,7 @@ export default function LocationCards({
             No se encontraron ubicaciones
           </p>
         ) : (
+          // Renderizado de cada tarjeta
           filteredLocations.map((location) => {
             const category = CATEGORIES.find((c) => c.id === location.type);
             return (

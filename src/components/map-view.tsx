@@ -16,7 +16,7 @@ import publicIcon from "@/assets/public.png";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 
-// Iconos personalizados para los diferentes tipos de ubicaciones
+// Función que crea un icono personalizado según la categoría
 const customIcon = (type: CategoryId) => {
   const cat = CATEGORIES.find((c) => c.id === type);
   return new Icon({
@@ -27,7 +27,7 @@ const customIcon = (type: CategoryId) => {
   });
 };
 
-// Icono para el marcador temporal
+// Icono para el marcador temporal (al seleccionar ubicación)
 const tempIcon = new DivIcon({
   html: `<div class="w-6 h-6 rounded-full bg-red-500 border-2 border-white flex items-center justify-center text-white animate-pulse"></div>`,
   className: "",
@@ -35,7 +35,7 @@ const tempIcon = new DivIcon({
   iconAnchor: [12, 12],
 });
 
-// Componente para centrar el mapa y manejar clics
+// Componente que controla el comportamiento del mapa
 function MapController({
   selectedLocation,
   isSelectingLocation,
@@ -47,6 +47,7 @@ function MapController({
 }) {
   const map = useMap();
 
+  // Cuando se selecciona una ubicación, centra el mapa en ella
   useEffect(() => {
     if (selectedLocation) {
       map.setView([selectedLocation.lat, selectedLocation.lng], 16, {
@@ -56,6 +57,7 @@ function MapController({
     }
   }, [map, selectedLocation]);
 
+  // Captura el clic en el mapa si se está seleccionando una nueva ubicación
   useMapEvents({
     click(e) {
       if (isSelectingLocation) {
@@ -67,6 +69,7 @@ function MapController({
   return null;
 }
 
+// Props del componente principal MapView
 interface MapViewProps {
   selectedLocation: Location | null;
   locations: Location[];
@@ -74,6 +77,7 @@ interface MapViewProps {
   onMapClick: (lat: number, lng: number) => void;
 }
 
+// Componente que muestra el mapa principal con todas las ubicaciones
 export default function MapView({
   selectedLocation,
   isSelectingLocation,
@@ -85,17 +89,21 @@ export default function MapView({
     lat: number;
     lng: number;
   } | null>(null);
+
+  // Refs para abrir popups dinámicamente
   const popupRefs = useRef<Record<string, LeafletMarker>>(Object.create(null));
 
+  // Evita problemas de renderizado en SSR
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  // Limpia referencias anteriores al actualizar ubicaciones
   useEffect(() => {
-    // Limpiar referencias anteriores
     popupRefs.current = {};
   }, [locations]);
 
+  // Abre el popup del marcador seleccionado
   useEffect(() => {
     if (selectedLocation) {
       const marker = popupRefs.current[selectedLocation.id];
@@ -105,6 +113,7 @@ export default function MapView({
     }
   }, [selectedLocation]);
 
+  // Obtiene las ubicaciones desde Firestore
   useEffect(() => {
     const fetchLocations = async () => {
       const snapshot = await getDocs(collection(db, "locations"));
@@ -115,6 +124,7 @@ export default function MapView({
     fetchLocations();
   }, []);
 
+  // Mostrar mensaje de carga mientras se monta el mapa
   if (!isMounted) {
     return (
       <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -125,6 +135,7 @@ export default function MapView({
 
   return (
     <div className="relative w-full h-full">
+      {/* Banner superior cuando se selecciona ubicación */}
       {isSelectingLocation && (
         <div
           role="alert"
@@ -134,6 +145,7 @@ export default function MapView({
         </div>
       )}
 
+      {/* Mapa base */}
       <MapContainer
         center={[-34.4713, -57.8519]}
         zoom={13}
@@ -144,6 +156,7 @@ export default function MapView({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+        {/* Controlador del mapa (centra, maneja clics) */}
         <MapController
           selectedLocation={selectedLocation}
           isSelectingLocation={isSelectingLocation}
@@ -153,6 +166,7 @@ export default function MapView({
           }}
         />
 
+        {/* Marcadores de ubicaciones */}
         {locations.map((location) => (
           <Marker
             key={location.id}
@@ -175,6 +189,7 @@ export default function MapView({
           </Marker>
         ))}
 
+        {/* Marcador temporal al seleccionar nueva ubicación */}
         {tempMarker && (
           <Marker position={[tempMarker.lat, tempMarker.lng]} icon={tempIcon}>
             <Popup>
