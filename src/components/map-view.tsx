@@ -13,15 +13,24 @@ import { CATEGORIES } from "@/lib/data";
 import type { Location, CategoryId } from "@/lib/data";
 import publicIcon from "@/assets/public.png";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import { Button } from "@/components/ui/button";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 
-// Constantes para el mapa
+// Constantes
 const mapboxAccessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-const mapboxStyle = "streets-v11";
-const mapboxTileUrl = `https://api.mapbox.com/styles/v1/mapbox/${mapboxStyle}/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`;
 
-// Función que crea un icono personalizado según la categoría
+// Función para obtener el ícono personalizado
 const customIcon = (type: CategoryId) => {
   const cat = CATEGORIES.find((c) => c.id === type);
   return new Icon({
@@ -32,7 +41,7 @@ const customIcon = (type: CategoryId) => {
   });
 };
 
-// Icono para el marcador temporal (al seleccionar ubicación)
+// Ícono para marcador temporal
 const tempIcon = new DivIcon({
   html: `<div class="w-6 h-6 rounded-full bg-red-500 border-2 border-white flex items-center justify-center text-white animate-pulse"></div>`,
   className: "",
@@ -40,7 +49,7 @@ const tempIcon = new DivIcon({
   iconAnchor: [12, 12],
 });
 
-// Componente que controla el comportamiento del mapa
+// Componente controlador del mapa
 function MapController({
   selectedLocation,
   isSelectingLocation,
@@ -94,9 +103,21 @@ export default function MapView({
     lat: number;
     lng: number;
   } | null>(null);
+  const [selectedStyle, setSelectedStyle] = useState("streets-v11");
 
   // Refs para abrir popups dinámicamente
   const popupRefs = useRef<Record<string, LeafletMarker>>(Object.create(null));
+
+  const MAPBOX_STYLES = [
+    { id: "streets-v11", name: "Streets" },
+    { id: "outdoors-v11", name: "Outdoors" },
+    { id: "light-v10", name: "Light" },
+    { id: "dark-v10", name: "Dark" },
+    { id: "satellite-v9", name: "Satellite" },
+    { id: "satellite-streets-v11", name: "Satellite Streets" },
+    { id: "navigation-day-v1", name: "Navigation Day" },
+    { id: "navigation-night-v1", name: "Navigation Night" },
+  ];
 
   // Evita problemas de renderizado en SSR
   useEffect(() => {
@@ -125,7 +146,6 @@ export default function MapView({
       const data = snapshot.docs.map((doc) => doc.data() as Location);
       setLocations(data);
     };
-
     fetchLocations();
   }, []);
 
@@ -150,13 +170,43 @@ export default function MapView({
         </div>
       )}
 
-      {/* Mapa base */}
+      {/* Selector de estilo de mapa */}
+      <div className="absolute top-2 right-2 z-[9999]">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              {MAPBOX_STYLES.find((s) => s.id === selectedStyle)?.name ||
+                "Estilo del mapa"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuLabel>Estilo de mapa</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup
+              value={selectedStyle}
+              onValueChange={(value) => setSelectedStyle(value)}
+            >
+              {MAPBOX_STYLES.map((style) => (
+                <DropdownMenuRadioItem key={style.id} value={style.id}>
+                  {style.name}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Mapa */}
       <MapContainer
         center={[-34.4713, -57.8519]}
         zoom={13}
         style={{ height: "100%", width: "100%" }}
       >
-        <TileLayer url={mapboxTileUrl} tileSize={512} zoomOffset={-1} />
+        <TileLayer
+          url={`https://api.mapbox.com/styles/v1/mapbox/${selectedStyle}/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`}
+          tileSize={512}
+          zoomOffset={-1}
+        />
 
         {/* Controlador del mapa (centra, maneja clics) */}
         <MapController
