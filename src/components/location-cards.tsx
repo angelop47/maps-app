@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import {
   Card,
@@ -12,16 +14,15 @@ import { MapPin, Search } from "lucide-react";
 import type { Location, CategoryId } from "@/lib/data";
 import { CATEGORIES } from "@/lib/data";
 import { Input } from "@/components/ui/input";
-
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 
@@ -35,16 +36,13 @@ interface LocationCardsProps {
 export default function LocationCards({
   onSelectLocation,
 }: LocationCardsProps) {
-  // Estado para guardar todas las ubicaciones
   const [locations, setLocations] = useState<Location[]>([]);
-  // Estado para el término de búsqueda
   const [searchTerm, setSearchTerm] = useState("");
-  // Estado para las categorías activas (filtrado)
-  const [activeCategories, setActiveCategories] = useState<CategoryId[]>([]);
-  // Estado de carga
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId | "all">(
+    "all"
+  );
   const [loading, setLoading] = useState(true);
 
-  // Efecto que se ejecuta al montar el componente para obtener las ubicaciones
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -61,23 +59,14 @@ export default function LocationCards({
     fetchLocations();
   }, []);
 
-  // Alternar una categoría activa (para el filtro)
-  const toggleCategory = (categoryId: CategoryId) => {
-    setActiveCategories((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
-    );
-  };
-
-  // Filtrar las ubicaciones según la búsqueda y las categorías seleccionadas
+  // Filtro basado en búsqueda y categoría
   const filteredLocations = locations.filter((location) => {
     const matchesSearch =
       location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       location.address.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesCategory =
-      activeCategories.length === 0 || activeCategories.includes(location.type);
+      selectedCategory === "all" || location.type === selectedCategory;
 
     return matchesSearch && matchesCategory;
   });
@@ -95,29 +84,36 @@ export default function LocationCards({
         />
       </div>
 
-      {/* Menú desplegable para filtrar por categorías */}
+      {/* Menú desplegable para filtrar por categoría única */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="w-full">
-            Filtrar por categoría
+            {selectedCategory === "all"
+              ? "Filtrar por categoría"
+              : CATEGORIES.find((c) => c.id === selectedCategory)?.name ||
+                "Categoría"}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
           <DropdownMenuLabel>Categorías</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {CATEGORIES.map((cat) => (
-            <DropdownMenuCheckboxItem
-              key={cat.id}
-              checked={activeCategories.includes(cat.id)}
-              onCheckedChange={() => toggleCategory(cat.id)}
-            >
-              {cat.name}
-            </DropdownMenuCheckboxItem>
-          ))}
+          <DropdownMenuRadioGroup
+            value={selectedCategory}
+            onValueChange={(value) =>
+              setSelectedCategory(value as CategoryId | "all")
+            }
+          >
+            <DropdownMenuRadioItem value="all">Todas</DropdownMenuRadioItem>
+            {CATEGORIES.map((cat) => (
+              <DropdownMenuRadioItem key={cat.id} value={cat.id}>
+                {cat.name}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Sección de tarjetas de ubicación */}
+      {/* Sección de tarjetas */}
       <div className="space-y-4">
         {loading ? (
           <p className="text-center py-8 text-muted-foreground">
@@ -128,7 +124,6 @@ export default function LocationCards({
             No se encontraron ubicaciones
           </p>
         ) : (
-          // Renderizado de cada tarjeta
           filteredLocations.map((location) => {
             const category = CATEGORIES.find((c) => c.id === location.type);
             return (
