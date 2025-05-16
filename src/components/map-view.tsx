@@ -16,6 +16,11 @@ import publicIcon from "@/assets/public.png";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/utils/firebase";
 
+// Constantes para el mapa
+const mapboxAccessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+const mapboxStyle = "streets-v11";
+const mapboxTileUrl = `https://api.mapbox.com/styles/v1/mapbox/${mapboxStyle}/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`;
+
 // Función que crea un icono personalizado según la categoría
 const customIcon = (type: CategoryId) => {
   const cat = CATEGORIES.find((c) => c.id === type);
@@ -151,10 +156,7 @@ export default function MapView({
         zoom={13}
         style={{ height: "100%", width: "100%" }}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <TileLayer url={mapboxTileUrl} tileSize={512} zoomOffset={-1} />
 
         {/* Controlador del mapa (centra, maneja clics) */}
         <MapController
