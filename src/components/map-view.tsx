@@ -104,7 +104,7 @@ export default function MapView({
     lat: number;
     lng: number;
   } | null>(null);
-  const [selectedStyle, setSelectedStyle] = useState("streets-v11");
+  const [selectedStyle, setSelectedStyle] = useState("outdoors-v11");
 
   // Refs para abrir popups dinámicamente
   const popupRefs = useRef<Record<string, LeafletMarker>>(Object.create(null));
