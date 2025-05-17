@@ -12,6 +12,7 @@ import { Icon, DivIcon, Marker as LeafletMarker } from "leaflet";
 import { CATEGORIES } from "@/lib/data";
 import type { Location, CategoryId } from "@/lib/data";
 import publicIcon from "@/assets/public.png";
+import { MapPin, Tag } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -231,11 +232,22 @@ export default function MapView({
             }}
           >
             <Popup>
-              <div>
-                <h3 className="font-bold">{location.name}</h3>
-                <p>{location.description}</p>
-                <p className="text-sm text-gray-500">{location.address}</p>
-                <p className="text-sm text-gray-500">{location.type}</p>
+              <div className="w-48 space-y-2">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {location.name}
+                </h3>
+                <p className="text-sm text-gray-700">{location.description}</p>
+
+                <div className="text-sm text-gray-600 border-t pt-2">
+                  <p className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-gray-500" />
+                    {location.address}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-gray-500" />
+                    {location.type}
+                  </p>
+                </div>
               </div>
             </Popup>
           </Marker>
