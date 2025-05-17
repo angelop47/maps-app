@@ -143,7 +143,7 @@ export default function AddLocationForm({
           </div>
 
           {/* Campo: Dirección */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="address">Dirección</Label>
             <Input
               id="address"
@@ -152,7 +152,7 @@ export default function AddLocationForm({
               onChange={(e) => setAddress(e.target.value)}
               required
             />
-          </div>
+          </div> */}
 
           {/* Campo: Categoría / tipo de ubicación */}
           <div className="space-y-2">
