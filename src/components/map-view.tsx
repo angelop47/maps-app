@@ -179,7 +179,7 @@ export default function MapView({
                 "Estilo del mapa"}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
+          <DropdownMenuContent className="w-56 z-[10001]">
             <DropdownMenuLabel>Estilo de mapa</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup
