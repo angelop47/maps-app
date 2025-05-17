@@ -4,8 +4,8 @@ import ecoIcon from "@/assets/eco-center.png";
 import culturalIcon from "@/assets/cultural.png";
 import dangerIcon from "@/assets/danger.png";
 import parkIcon from "@/assets/park.png";
+import restaurantIcon from "@/assets/restaurant.png";
 
-export type CategoryId = "public" | "trash" | "eco-center" | "cultural" | "danger" | "park";
 
 export type Location = {
   id: string;
@@ -17,10 +17,9 @@ export type Location = {
   type: CategoryId;
 }
 
-export const locations: Location[] = [
+export const locations: Location[] = []
 
-]
-
+export type CategoryId = "public" | "trash" | "eco-center" | "cultural" | "danger" | "park" | "restaurant";
 
 export const CATEGORIES: { id: CategoryId; name: string; icon: string; }[] = [
   { id: "public", name: "Lugar público", icon: publicIcon },
@@ -29,4 +28,5 @@ export const CATEGORIES: { id: CategoryId; name: string; icon: string; }[] = [
   { id: "cultural", name: "Sitio cultural", icon: culturalIcon},
   { id: "danger", name: "Zona peligrosa", icon: dangerIcon },
   { id: "park", name: "Parque", icon: parkIcon },
+  { id: "restaurant", name: "Restaurante", icon: restaurantIcon },
 ];
